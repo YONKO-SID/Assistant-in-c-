@@ -52,7 +52,9 @@ Hello, human!
 > open notepad
 // Notepad opens
 > firefox
-// Firefox opens
+// Firefox opens(only works if firefox is the default browser)
+> cmd
+// command prompt opens
 > exit
 Goodbye!
 ```
