@@ -193,6 +193,57 @@ void get_cpu_usage() {
 #endif
 }
 
+// Add battery information function
+void get_battery_info() {
+    printf("\033[1;33m=== Battery Information ===\033[0m\n");
+    
+#ifdef _WIN32
+    SYSTEM_POWER_STATUS powerStatus;
+    if (GetSystemPowerStatus(&powerStatus)) {
+        if (powerStatus.BatteryFlag == 128) {
+            printf("Battery: No battery detected\n");
+        } else if (powerStatus.BatteryFlag == 255) {
+            printf("Battery: Unknown status\n");
+        } else {
+            printf("Battery Level: %d%%\n", powerStatus.BatteryLifePercent);
+            if (powerStatus.BatteryFlag & 8) {
+                printf("Status: Charging\n");
+            } else if (powerStatus.BatteryFlag & 1) {
+                printf("Status: High\n");
+            } else if (powerStatus.BatteryFlag & 2) {
+                printf("Status: Low\n");
+            } else if (powerStatus.BatteryFlag & 4) {
+                printf("Status: Critical\n");
+            } else {
+                printf("Status: Unknown\n");
+            }
+        }
+    } else {
+        printf("Battery: Unable to get battery information\n");
+    }
+#else
+    FILE* file = fopen("/sys/class/power_supply/BAT0/capacity", "r");
+    if (file) {
+        char capacity[10];
+        if (fgets(capacity, sizeof(capacity), file)) {
+            printf("Battery Level: %s%%", capacity);
+        }
+        fclose(file);
+        
+        file = fopen("/sys/class/power_supply/BAT0/status", "r");
+        if (file) {
+            char status[20];
+            if (fgets(status, sizeof(status), file)) {
+                printf("Status: %s", status);
+            }
+            fclose(file);
+        }
+    } else {
+        printf("Battery: No battery detected or not available\n");
+    }
+#endif
+}
+
 void get_network_info() {
     printf("\033[1;35m=== Network Information ===\033[0m\n");
 #ifdef _WIN32
@@ -482,7 +533,8 @@ void show_help() {
     printf("  systeminfo       - Show system details\n");
     printf("  ipconfig         - Show network info\n");
     printf("  diskinfo         - Show storage info\n");
-    printf("  cpuinfo          - Show CPU usage\n\n");
+    printf("  cpuinfo          - Show CPU usage\n");
+    printf("  batteryinfo      - Show battery information\n\n");
     
     printf("\033[1;33mFile Management:\033[0m\n");
     printf("  list files       - List files in directory\n");
@@ -595,6 +647,10 @@ int process_command(const char* input) {
     }
     if (strcmp(command, "cpuinfo") == 0) {
         get_cpu_usage();
+        return 1;
+    }
+    if (strcmp(command, "batteryinfo") == 0) {
+        get_battery_info();
         return 1;
     }
     
