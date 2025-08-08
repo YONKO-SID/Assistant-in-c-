@@ -360,6 +360,83 @@ void get_network_speed() {
 #endif
 }
 
+// Add system uptime function
+void get_system_uptime() {
+    printf("\033[1;33m=== System Uptime Information ===\033[0m\n");
+    
+#ifdef _WIN32
+    ULARGE_INTEGER uptime;
+    if (GetTickCount64) {
+        uptime.QuadPart = GetTickCount64();
+    } else {
+        uptime.LowPart = GetTickCount();
+        uptime.HighPart = 0;
+    }
+    
+    unsigned long seconds = uptime.QuadPart / 1000;
+    unsigned long days = seconds / 86400;
+    unsigned long hours = (seconds % 86400) / 3600;
+    unsigned long minutes = (seconds % 3600) / 60;
+    seconds = seconds % 60;
+    
+    printf("System Uptime: %lu days, %lu hours, %lu minutes, %lu seconds\n", 
+           days, hours, minutes, seconds);
+    
+    // Get boot time
+    FILETIME bootTime;
+    ULARGE_INTEGER bootTimeLarge;
+    if (GetSystemTimeAsFileTime(&bootTime)) {
+        bootTimeLarge.LowPart = bootTime.dwLowDateTime;
+        bootTimeLarge.HighPart = bootTime.dwHighDateTime;
+        bootTimeLarge.QuadPart -= (uptime.QuadPart * 10000); // Convert to file time units
+        
+        FILETIME localBootTime;
+        FileTimeToLocalFileTime(&bootTime, &localBootTime);
+        
+        SYSTEMTIME sysBootTime;
+        FileTimeToSystemTime(&localBootTime, &sysBootTime);
+        
+        printf("Boot Time: %04d-%02d-%02d %02d:%02d:%02d\n",
+               sysBootTime.wYear, sysBootTime.wMonth, sysBootTime.wDay,
+               sysBootTime.wHour, sysBootTime.wMinute, sysBootTime.wSecond);
+    }
+#else
+    FILE* file = fopen("/proc/uptime", "r");
+    if (file) {
+        double uptime_seconds;
+        fscanf(file, "%lf", &uptime_seconds);
+        fclose(file);
+        
+        int days = (int)(uptime_seconds / 86400);
+        int hours = (int)((uptime_seconds - (days * 86400)) / 3600);
+        int minutes = (int)((uptime_seconds - (days * 86400) - (hours * 3600)) / 60);
+        int seconds = (int)(uptime_seconds - (days * 86400) - (hours * 3600) - (minutes * 60));
+        
+        printf("System Uptime: %d days, %d hours, %d minutes, %d seconds\n", 
+               days, hours, minutes, seconds);
+        
+        // Get boot time from /proc/stat
+        file = fopen("/proc/stat", "r");
+        if (file) {
+            char line[256];
+            while (fgets(line, sizeof(line), file)) {
+                if (strncmp(line, "btime", 5) == 0) {
+                    unsigned long btime;
+                    sscanf(line, "btime %lu", &btime);
+                    time_t boot_time = (time_t)btime;
+                    struct tm* tm_info = localtime(&boot_time);
+                    printf("Boot Time: %04d-%02d-%02d %02d:%02d:%02d\n",
+                           tm_info->tm_year + 1900, tm_info->tm_mon + 1, tm_info->tm_mday,
+                           tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec);
+                    break;
+                }
+            }
+            fclose(file);
+        }
+    }
+#endif
+}
+
 void get_network_info() {
     printf("\033[1;35m=== Network Information ===\033[0m\n");
 #ifdef _WIN32
@@ -653,7 +730,8 @@ void show_help() {
     printf("  batteryinfo      - Show battery information\n");
     printf("  processinfo      - Show running processes\n");
     printf("  netinfo          - Show network information\n");
-    printf("  netspeed         - Show network speed\n\n");
+    printf("  netspeed         - Show network speed\n");
+    printf("  uptime           - Show system uptime\n\n");
     
     printf("\033[1;33mFile Management:\033[0m\n");
     printf("  list files       - List files in directory\n");
@@ -782,6 +860,10 @@ int process_command(const char* input) {
     }
     if (strcmp(command, "netspeed") == 0) {
         get_network_speed();
+        return 1;
+    }
+    if (strcmp(command, "uptime") == 0) {
+        get_system_uptime();
         return 1;
     }
     
