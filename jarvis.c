@@ -244,6 +244,78 @@ void get_battery_info() {
 #endif
 }
 
+// Add process information function
+void get_process_info() {
+    printf("\033[1;33m=== Process Information ===\033[0m\n");
+    
+#ifdef _WIN32
+    HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hSnapshot != INVALID_HANDLE_VALUE) {
+        PROCESSENTRY32 pe32;
+        pe32.dwSize = sizeof(PROCESSENTRY32);
+        
+        if (Process32First(hSnapshot, &pe32)) {
+            int count = 0;
+            printf("Top 10 Running Processes:\n");
+            printf("%-30s %-10s %-10s\n", "Process Name", "PID", "Memory (KB)");
+            printf("------------------------------------------------\n");
+            
+            do {
+                if (count < 10) {
+                    printf("%-30s %-10lu %-10lu\n", 
+                           pe32.szExeFile, pe32.th32ProcessID, pe32.dwSize);
+                    count++;
+                }
+            } while (Process32Next(hSnapshot, &pe32) && count < 10);
+        }
+        CloseHandle(hSnapshot);
+    }
+#else
+    DIR* proc = opendir("/proc");
+    if (proc) {
+        struct dirent* entry;
+        int count = 0;
+        printf("Top 10 Running Processes:\n");
+        printf("%-30s %-10s %-10s\n", "Process Name", "PID", "Status");
+        printf("------------------------------------------------\n");
+        
+        while ((entry = readdir(proc)) && count < 10) {
+            if (isdigit(entry->d_name[0])) {
+                char path[256];
+                char name[256];
+                char status[10];
+                
+                snprintf(path, sizeof(path), "/proc/%s/comm", entry->d_name);
+                FILE* file = fopen(path, "r");
+                if (file) {
+                    if (fgets(name, sizeof(name), file)) {
+                        name[strcspn(name, "\n")] = 0;
+                        
+                        snprintf(path, sizeof(path), "/proc/%s/status", entry->d_name);
+                        FILE* status_file = fopen(path, "r");
+                        if (status_file) {
+                            char line[256];
+                            while (fgets(line, sizeof(line), status_file)) {
+                                if (strncmp(line, "State:", 6) == 0) {
+                                    sscanf(line, "State: %s", status);
+                                    break;
+                                }
+                            }
+                            fclose(status_file);
+                        }
+                        
+                        printf("%-30s %-10s %-10s\n", name, entry->d_name, status);
+                        count++;
+                    }
+                    fclose(file);
+                }
+            }
+        }
+        closedir(proc);
+    }
+#endif
+}
+
 void get_network_info() {
     printf("\033[1;35m=== Network Information ===\033[0m\n");
 #ifdef _WIN32
@@ -534,7 +606,8 @@ void show_help() {
     printf("  ipconfig         - Show network info\n");
     printf("  diskinfo         - Show storage info\n");
     printf("  cpuinfo          - Show CPU usage\n");
-    printf("  batteryinfo      - Show battery information\n\n");
+    printf("  batteryinfo      - Show battery information\n");
+    printf("  processinfo      - Show running processes\n\n");
     
     printf("\033[1;33mFile Management:\033[0m\n");
     printf("  list files       - List files in directory\n");
@@ -651,6 +724,10 @@ int process_command(const char* input) {
     }
     if (strcmp(command, "batteryinfo") == 0) {
         get_battery_info();
+        return 1;
+    }
+    if (strcmp(command, "processinfo") == 0) {
+        get_process_info();
         return 1;
     }
     
