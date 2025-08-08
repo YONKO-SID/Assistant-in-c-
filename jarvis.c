@@ -316,6 +316,50 @@ void get_process_info() {
 #endif
 }
 
+// Add network speed monitoring function
+void get_network_speed() {
+    printf("\033[1;33m=== Network Speed Information ===\033[0m\n");
+    
+#ifdef _WIN32
+    MIB_IFROW ifRow;
+    memset(&ifRow, 0, sizeof(ifRow));
+    ifRow.dwIndex = 1; // First network interface
+    
+    if (GetIfEntry(&ifRow) == NO_ERROR) {
+        printf("Network Interface: %s\n", ifRow.wszName);
+        printf("Interface Type: %d\n", ifRow.dwType);
+        printf("Interface Status: %s\n", 
+               ifRow.dwOperStatus == IF_OPER_STATUS_OPERATIONAL ? "Operational" : "Down");
+        printf("Speed: %lu Mbps\n", ifRow.dwSpeed / 1000000);
+        printf("MTU: %lu bytes\n", ifRow.dwMtu);
+    } else {
+        printf("Unable to get network interface information\n");
+    }
+#else
+    FILE* file = fopen("/proc/net/dev", "r");
+    if (file) {
+        char line[256];
+        int line_count = 0;
+        printf("Network Interfaces:\n");
+        printf("%-15s %-15s %-15s %-15s\n", "Interface", "RX Bytes", "TX Bytes", "Status");
+        printf("------------------------------------------------\n");
+        
+        while (fgets(line, sizeof(line), file) && line_count < 5) {
+            if (line_count > 1) { // Skip header lines
+                char interface[20];
+                unsigned long rx_bytes, tx_bytes;
+                sscanf(line, "%s %lu %*d %*d %*d %*d %*d %*d %*d %lu", 
+                       interface, &rx_bytes, &tx_bytes);
+                printf("%-15s %-15lu %-15lu %-15s\n", 
+                       interface, rx_bytes, tx_bytes, "Active");
+            }
+            line_count++;
+        }
+        fclose(file);
+    }
+#endif
+}
+
 void get_network_info() {
     printf("\033[1;35m=== Network Information ===\033[0m\n");
 #ifdef _WIN32
@@ -607,7 +651,9 @@ void show_help() {
     printf("  diskinfo         - Show storage info\n");
     printf("  cpuinfo          - Show CPU usage\n");
     printf("  batteryinfo      - Show battery information\n");
-    printf("  processinfo      - Show running processes\n\n");
+    printf("  processinfo      - Show running processes\n");
+    printf("  netinfo          - Show network information\n");
+    printf("  netspeed         - Show network speed\n\n");
     
     printf("\033[1;33mFile Management:\033[0m\n");
     printf("  list files       - List files in directory\n");
@@ -728,6 +774,14 @@ int process_command(const char* input) {
     }
     if (strcmp(command, "processinfo") == 0) {
         get_process_info();
+        return 1;
+    }
+    if (strcmp(command, "netinfo") == 0) {
+        get_network_info();
+        return 1;
+    }
+    if (strcmp(command, "netspeed") == 0) {
+        get_network_speed();
         return 1;
     }
     
