@@ -108,25 +108,87 @@ void get_system_date() {
 }
 
 void get_system_info() {
-    printf("\033[1;35m=== System Information ===\033[0m\n");
+    printf("\033[1;33m=== System Information ===\033[0m\n");
     
 #ifdef _WIN32
     SYSTEM_INFO sysInfo;
     GetSystemInfo(&sysInfo);
-    printf("Processor Architecture: %d\n", sysInfo.wProcessorArchitecture);
-    printf("Number of Processors: %d\n", sysInfo.dwNumberOfProcessors);
-    
     MEMORYSTATUSEX memInfo;
     memInfo.dwLength = sizeof(MEMORYSTATUSEX);
     GlobalMemoryStatusEx(&memInfo);
-    printf("Total Physical Memory: %.2f GB\n", (double)memInfo.ullTotalPhys / (1024*1024*1024));
-    printf("Available Physical Memory: %.2f GB\n", (double)memInfo.ullAvailPhys / (1024*1024*1024));
+    
+    printf("Processor: %d cores\n", sysInfo.dwNumberOfProcessors);
+    printf("Architecture: %s\n", sysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64 ? "x64" : "x86");
+    printf("Memory: %.2f GB total, %.2f GB available\n", 
+           (double)memInfo.ullTotalPhys / (1024*1024*1024),
+           (double)memInfo.ullAvailPhys / (1024*1024*1024));
+    printf("Memory Usage: %.1f%%\n", memInfo.dwMemoryLoad);
 #else
     struct sysinfo si;
     if (sysinfo(&si) == 0) {
         printf("Uptime: %ld seconds\n", si.uptime);
+        printf("Load Average: %.2f %.2f %.2f\n", 
+               (double)si.loads[0] / 65536.0,
+               (double)si.loads[1] / 65536.0,
+               (double)si.loads[2] / 65536.0);
         printf("Total RAM: %ld MB\n", si.totalram / 1024 / 1024);
         printf("Free RAM: %ld MB\n", si.freeram / 1024 / 1024);
+    }
+#endif
+}
+
+// Add CPU usage function
+void get_cpu_usage() {
+    printf("\033[1;33m=== CPU Usage Information ===\033[0m\n");
+    
+#ifdef _WIN32
+    FILETIME idleTime, kernelTime, userTime;
+    FILETIME idleTimePrev, kernelTimePrev, userTimePrev;
+    
+    if (GetSystemTimes(&idleTimePrev, &kernelTimePrev, &userTimePrev)) {
+        Sleep(1000); // Wait 1 second
+        if (GetSystemTimes(&idleTime, &kernelTime, &userTime)) {
+            ULARGE_INTEGER idle, kernel, user;
+            ULARGE_INTEGER idlePrev, kernelPrev, userPrev;
+            
+            idle.LowPart = idleTime.dwLowDateTime;
+            idle.HighPart = idleTime.dwHighDateTime;
+            kernel.LowPart = kernelTime.dwLowDateTime;
+            kernel.HighPart = kernelTime.dwHighDateTime;
+            user.LowPart = userTime.dwLowDateTime;
+            user.HighPart = userTime.dwHighDateTime;
+            
+            idlePrev.LowPart = idleTimePrev.dwLowDateTime;
+            idlePrev.HighPart = idleTimePrev.dwHighDateTime;
+            kernelPrev.LowPart = kernelTimePrev.dwLowDateTime;
+            kernelPrev.HighPart = kernelTimePrev.dwHighDateTime;
+            userPrev.LowPart = userTimePrev.dwLowDateTime;
+            userPrev.HighPart = userTimePrev.dwHighDateTime;
+            
+            ULONGLONG kernelDiff = kernel.QuadPart - kernelPrev.QuadPart;
+            ULONGLONG userDiff = user.QuadPart - userPrev.QuadPart;
+            ULONGLONG idleDiff = idle.QuadPart - idlePrev.QuadPart;
+            
+            ULONGLONG totalDiff = kernelDiff + userDiff;
+            double cpuUsage = 100.0 - ((double)idleDiff / (double)totalDiff * 100.0);
+            
+            printf("CPU Usage: %.1f%%\n", cpuUsage);
+        }
+    }
+#else
+    FILE* file = fopen("/proc/stat", "r");
+    if (file) {
+        char line[256];
+        if (fgets(line, sizeof(line), file)) {
+            unsigned long user, nice, system, idle, iowait, irq, softirq, steal;
+            sscanf(line, "cpu %lu %lu %lu %lu %lu %lu %lu %lu", 
+                   &user, &nice, &system, &idle, &iowait, &irq, &softirq, &steal);
+            unsigned long total = user + nice + system + idle + iowait + irq + softirq + steal;
+            unsigned long nonIdle = user + nice + system + irq + softirq + steal;
+            double cpuUsage = (double)nonIdle / total * 100.0;
+            printf("CPU Usage: %.1f%%\n", cpuUsage);
+        }
+        fclose(file);
     }
 #endif
 }
@@ -419,7 +481,8 @@ void show_help() {
     printf("\033[1;33mSystem Information:\033[0m\n");
     printf("  systeminfo       - Show system details\n");
     printf("  ipconfig         - Show network info\n");
-    printf("  diskinfo         - Show storage info\n\n");
+    printf("  diskinfo         - Show storage info\n");
+    printf("  cpuinfo          - Show CPU usage\n\n");
     
     printf("\033[1;33mFile Management:\033[0m\n");
     printf("  list files       - List files in directory\n");
@@ -528,6 +591,10 @@ int process_command(const char* input) {
     }
     if (strcmp(command, "diskinfo") == 0) {
         get_disk_info();
+        return 1;
+    }
+    if (strcmp(command, "cpuinfo") == 0) {
+        get_cpu_usage();
         return 1;
     }
     
