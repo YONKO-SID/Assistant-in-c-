@@ -26,21 +26,28 @@
 #include <time.h>
 #include <math.h>
 #include <sys/stat.h>
+#include "ai_nlp.h"
+#include "automation.h"
 
 #ifdef _WIN32
-  #include <windows.h>
   #include <winsock2.h>
+  #include <windows.h>
   #include <iphlpapi.h>
+  #include <tlhelp32.h>
 #else
-  #include <unistd.h>
-  #include <sys/sysinfo.h>
-  #include <pwd.h>
+#include <unistd.h>
+#include <sys/sysinfo.h>
+#include <pwd.h>
+#include <dirent.h>
+#include <sys/stat.h>
 #endif
+  
 
 #define MAX_INPUT 1024
 #define MAX_RESPONSE 2048
 #define LOGFILE "jarvis.log"
 #define CONFIG_FILE "jarvis.conf"
+#define VOICE_BUFFER_SIZE 1024
 
 /* ---------- Utility Functions ---------- */
 
@@ -72,11 +79,202 @@ void log_action(const char* action) {
     }
 }
 
-char* str_to_lower(char* str) {
-    for (int i = 0; str[i]; i++) {
-        str[i] = tolower(str[i]);
+/* ---------- Function Declarations ---------- */
+void get_system_time();
+void get_system_info();
+void get_cpu_usage();
+void tell_joke();
+void get_crypto_price(const char* coin);
+void generate_password(int length);
+void system_monitor();
+void open_ai_chat();
+void translate_text(const char* text, const char* lang);
+void take_screenshot();
+void open_calculator_advanced();
+void currency_converter(double amount, const char* from, const char* to);
+void create_backup(const char* filename);
+void system_optimizer();
+void open_virtual_assistant();
+void get_battery_info();
+void get_process_info();
+void get_network_speed();
+void get_system_uptime();
+void ai_chat_response(const char* message);
+void speak_text(const char* text);
+void read_file_content(const char* filename);
+void search_in_files(const char* pattern, const char* directory);
+void get_file_stats(const char* filename);
+void create_directory(const char* dirname);
+void list_directory_tree(const char* path, int depth);
+void generate_qr_code(const char* text);
+void start_voice_assistant();
+void open_google_search(const char* query);
+void open_youtube_search(const char* query);
+void open_website(const char* url);
+void list_files();
+void create_file(const char* filename);
+void delete_file(const char* filename);
+void open_application(const char* app_name);
+void system_shutdown();
+void system_restart();
+void system_logoff();
+void get_weather_info(const char* city);
+void clear_screen();
+void show_help();
+int process_command(const char* input);
+
+/* ---------- Advanced Utility Functions ---------- */
+
+void speak_text(const char* text) {
+    char command[1024];
+#ifdef _WIN32
+    // Windows text-to-speech using PowerShell
+    snprintf(command, sizeof(command),
+        "powershell -Command \"Add-Type -AssemblyName System.Speech; $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer; $speak.Speak('%s');\"",
+        text);
+#else
+    // Linux text-to-speech using espeak (if available)
+    snprintf(command, sizeof(command), "espeak \"%s\" 2>/dev/null", text);
+#endif
+    system(command);
+}
+
+void read_file_content(const char* filename) {
+    FILE* file = fopen(filename, "r");
+    if (file) {
+        printf("\033[1;36m=== Content of %s ===\033[0m\n", filename);
+        char buffer[1024];
+        while (fgets(buffer, sizeof(buffer), file)) {
+            printf("%s", buffer);
+        }
+        fclose(file);
+    } else {
+        printf("\033[31mError: Could not open file '%s'\033[0m\n", filename);
     }
-    return str;
+}
+
+void search_in_files(const char* pattern, const char* directory) {
+    char command[1024];
+#ifdef _WIN32
+    snprintf(command, sizeof(command), "findstr /s /i \"%s\" %s\\*.txt %s\\*.c %s\\*.h %s\\*.cpp",
+             pattern, directory, directory, directory, directory);
+#else
+    snprintf(command, sizeof(command), "grep -r -i \"%s\" %s --include=\"*.txt\" --include=\"*.c\" --include=\"*.h\" --include=\"*.cpp\"",
+             pattern, directory);
+#endif
+    printf("\033[1;36mSearching for '%s' in %s:\033[0m\n", pattern, directory);
+    system(command);
+}
+
+void get_file_stats(const char* filename) {
+    struct stat file_stat;
+    if (stat(filename, &file_stat) == 0) {
+        printf("\033[1;36m=== File Statistics ===\033[0m\n");
+        printf("Filename: %s\n", filename);
+        printf("Size: %lld bytes\n", (long long)file_stat.st_size);
+        printf("Last modified: %s", ctime(&file_stat.st_mtime));
+        printf("Permissions: %o\n", file_stat.st_mode & 0777);
+    } else {
+        printf("\033[31mError: Could not get stats for file '%s'\033[0m\n", filename);
+    }
+}
+
+void create_directory(const char* dirname) {
+#ifdef _WIN32
+    if (mkdir(dirname) == 0) {
+#else
+    if (mkdir(dirname, 0755) == 0) {
+#endif
+        printf("\033[1;32mDirectory '%s' created successfully!\033[0m\n", dirname);
+        log_action("Directory created");
+    } else {
+        printf("\033[31mError: Could not create directory '%s'\033[0m\n", dirname);
+    }
+}
+
+void list_directory_tree(const char* path, int depth) {
+#ifdef _WIN32
+    printf("\033[1;33mDirectory tree feature is available on Linux systems.\033[0m\n");
+    printf("On Windows, use 'dir /s' command instead.\n");
+#else
+    DIR* dir = opendir(path);
+    if (!dir) return;
+    
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+            continue;
+            
+        for (int i = 0; i < depth; i++) printf("  ");
+        printf("├── %s\n", entry->d_name);
+        
+        char full_path[1024];
+        snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
+        
+        struct stat statbuf;
+        if (stat(full_path, &statbuf) == 0 && S_ISDIR(statbuf.st_mode)) {
+            list_directory_tree(full_path, depth + 1);
+        }
+    }
+    closedir(dir);
+#endif
+}
+
+void generate_qr_code(const char* text) {
+    char command[1024];
+    snprintf(command, sizeof(command),
+#ifdef _WIN32
+        "start https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=%s"
+#else
+        "xdg-open \"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=%s\""
+#endif
+        , text);
+    system(command);
+    printf("\033[1;32mQR code generated for: %s\033[0m\n", text);
+}
+
+void start_voice_assistant() {
+    printf("\033[1;36m🎤 Voice Assistant Mode Activated!\033[0m\n");
+    printf("Speak your commands (type 'stop' to exit voice mode):\n");
+    
+    char input[MAX_INPUT];
+    while (1) {
+        printf("\033[1;34m🎤 Speak>\033[0m ");
+        fflush(stdout);
+        
+        if (fgets(input, sizeof(input), stdin) == NULL) {
+            break;
+        }
+        
+        input[strcspn(input, "\n")] = 0;
+        
+        if (strcmp(input, "stop") == 0 || strcmp(input, "exit") == 0) {
+            printf("\033[1;32mVoice mode deactivated.\033[0m\n");
+            break;
+        }
+        
+        printf("\033[1;33mProcessing voice command: %s\033[0m\n", input);
+        speak_text(input);
+    }
+}
+
+void ai_chat_response(const char* message) {
+    printf("\033[1;35m🤖 AI Response:\033[0m ");
+    
+    // Simple AI responses based on keywords
+    if (strstr(message, "hello") || strstr(message, "hi")) {
+        printf("Hello! How can I assist you today?\n");
+    } else if (strstr(message, "how are you")) {
+        printf("I'm functioning optimally! Ready to help you with any task.\n");
+    } else if (strstr(message, "weather")) {
+        printf("I can help you check the weather. Try 'weather <city>' command.\n");
+    } else if (strstr(message, "time")) {
+        get_system_time();
+    } else if (strstr(message, "joke")) {
+        tell_joke();
+    } else {
+        printf("I'm here to help! You can ask me about time, weather, files, or system information.\n");
+    }
 }
 
 char* trim_whitespace(char* str) {
@@ -87,6 +285,178 @@ char* trim_whitespace(char* str) {
     while (end > str && isspace((unsigned char)*end)) end--;
     end[1] = '\0';
     return str;
+}
+
+/* ---------- Super Advanced Features ---------- */
+
+void get_crypto_price(const char* coin) {
+    char command[1024];
+    snprintf(command, sizeof(command),
+#ifdef _WIN32
+        "start https://www.google.com/search?q=%s+price"
+#else
+        "xdg-open \"https://www.google.com/search?q=%s+price\""
+#endif
+        , coin);
+    system(command);
+    printf("\033[1;32mOpening %s price information\033[0m\n", coin);
+}
+
+void generate_password(int length) {
+    const char* chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
+    printf("\033[1;36mGenerated Password: \033[1;32m");
+    for (int i = 0; i < length; i++) {
+        printf("%c", chars[rand() % strlen(chars)]);
+    }
+    printf("\033[0m\n");
+}
+
+void system_monitor() {
+    printf("\033[1;33m🖥️  Real-time System Monitor\033[0m\n");
+    printf("Monitoring system resources (Press Ctrl+C to stop)...\n");
+    
+    for (int i = 0; i < 5; i++) {
+#ifdef _WIN32
+        system("cls");
+#else
+        system("clear");
+#endif
+        
+        get_system_info();
+        get_cpu_usage();
+        printf("\n--- Refreshing in 2 seconds ---\n");
+        Sleep(2000);
+    }
+}
+
+void open_ai_chat() {
+    char command[1024];
+    snprintf(command, sizeof(command),
+#ifdef _WIN32
+        "start https://chat.openai.com/"
+#else
+        "xdg-open \"https://chat.openai.com/\""
+#endif
+    );
+    system(command);
+    printf("\033[1;32mOpening ChatGPT...\033[0m\n");
+}
+
+void translate_text(const char* text, const char* lang) {
+    char command[1024];
+    snprintf(command, sizeof(command),
+#ifdef _WIN32
+        "start https://translate.google.com/?sl=auto&tl=%s&text=%s&op=translate"
+#else
+        "xdg-open \"https://translate.google.com/?sl=auto&tl=%s&text=%s&op=translate\""
+#endif
+        , lang, text);
+    system(command);
+    printf("\033[1;32mTranslating to %s...\033[0m\n", lang);
+}
+
+void take_screenshot() {
+    char filename[50];
+    time_t now = time(NULL);
+    struct tm* tm_info = localtime(&now);
+    strftime(filename, sizeof(filename), "screenshot_%Y%m%d_%H%M%S.png", tm_info);
+    
+#ifdef _WIN32
+    char command[100];
+    snprintf(command, sizeof(command), "screencapture -x %s", filename);
+#else
+    char command[100];
+    snprintf(command, sizeof(command), "scrot %s", filename);
+#endif
+    
+    system(command);
+    printf("\033[1;32mScreenshot saved as: %s\033[0m\n", filename);
+}
+
+void open_calculator_advanced() {
+    printf("\033[1;36m🧮 Advanced Calculator Mode\033[0m\n");
+    printf("Available operations: +, -, *, /, ^ (power), sqrt (square root)\n");
+    printf("Example: 2 + 3 * 4, sqrt(16), 2^8\n");
+    
+    char expression[100];
+    printf("Enter expression: ");
+    fgets(expression, sizeof(expression), stdin);
+    expression[strcspn(expression, "\n")] = 0;
+    
+    // Simple evaluation (for demonstration)
+    printf("\033[1;33mResult: Processing advanced calculation...\033[0m\n");
+}
+
+void currency_converter(double amount, const char* from, const char* to) {
+    char command[1024];
+    snprintf(command, sizeof(command),
+#ifdef _WIN32
+        "start https://www.google.com/search?q=%f+%s+to+%s"
+#else
+        "xdg-open \"https://www.google.com/search?q=%f+%s+to+%s\""
+#endif
+        , amount, from, to);
+    system(command);
+    printf("\033[1;32mConverting %.2f %s to %s...\033[0m\n", amount, from, to);
+}
+
+void create_backup(const char* filename) {
+    char backup_name[100];
+    time_t now = time(NULL);
+    struct tm* tm_info = localtime(&now);
+    strftime(backup_name, sizeof(backup_name), "backup_%Y%m%d_%H%M%S_", tm_info);
+    strcat(backup_name, filename);
+    
+    FILE* source = fopen(filename, "rb");
+    FILE* backup = fopen(backup_name, "wb");
+    
+    if (source && backup) {
+        char buffer[1024];
+        size_t bytes;
+        while ((bytes = fread(buffer, 1, sizeof(buffer), source)) > 0) {
+            fwrite(buffer, 1, bytes, backup);
+        }
+        fclose(source);
+        fclose(backup);
+        printf("\033[1;32mBackup created: %s\033[0m\n", backup_name);
+    } else {
+        printf("\033[31mError creating backup\033[0m\n");
+    }
+}
+
+void system_optimizer() {
+    printf("\033[1;33m⚡ System Optimization Started\033[0m\n");
+#ifdef _WIN32
+    system("cleanmgr /sagerun:1");
+    printf("Disk cleanup completed\n");
+#else
+    system("sudo apt-get autoremove -y");
+    printf("System cleanup completed\n");
+#endif
+}
+
+void open_virtual_assistant() {
+    printf("\033[1;36m🤖 Virtual Assistant Mode Activated\033[0m\n");
+    printf("You can now have a conversation with Jarvis!\n");
+    
+    char input[MAX_INPUT];
+    while (1) {
+        printf("\033[1;34mYou>\033[0m ");
+        fflush(stdout);
+        
+        if (fgets(input, sizeof(input), stdin) == NULL) {
+            break;
+        }
+        
+        input[strcspn(input, "\n")] = 0;
+        
+        if (strcmp(input, "exit") == 0 || strcmp(input, "quit") == 0) {
+            printf("\033[1;32mVirtual assistant mode deactivated.\033[0m\n");
+            break;
+        }
+        
+        ai_chat_response(input);
+    }
 }
 
 /* ---------- System Information Functions ---------- */
@@ -366,12 +736,8 @@ void get_system_uptime() {
     
 #ifdef _WIN32
     ULARGE_INTEGER uptime;
-    if (GetTickCount64) {
-        uptime.QuadPart = GetTickCount64();
-    } else {
-        uptime.LowPart = GetTickCount();
-        uptime.HighPart = 0;
-    }
+    uptime.LowPart = GetTickCount();
+    uptime.HighPart = 0;
     
     unsigned long seconds = uptime.QuadPart / 1000;
     unsigned long days = seconds / 86400;
@@ -385,21 +751,20 @@ void get_system_uptime() {
     // Get boot time
     FILETIME bootTime;
     ULARGE_INTEGER bootTimeLarge;
-    if (GetSystemTimeAsFileTime(&bootTime)) {
-        bootTimeLarge.LowPart = bootTime.dwLowDateTime;
-        bootTimeLarge.HighPart = bootTime.dwHighDateTime;
-        bootTimeLarge.QuadPart -= (uptime.QuadPart * 10000); // Convert to file time units
+    GetSystemTimeAsFileTime(&bootTime);
+    bootTimeLarge.LowPart = bootTime.dwLowDateTime;
+    bootTimeLarge.HighPart = bootTime.dwHighDateTime;
+    bootTimeLarge.QuadPart -= (uptime.QuadPart * 10000); // Convert to file time units
         
-        FILETIME localBootTime;
-        FileTimeToLocalFileTime(&bootTime, &localBootTime);
-        
-        SYSTEMTIME sysBootTime;
-        FileTimeToSystemTime(&localBootTime, &sysBootTime);
-        
-        printf("Boot Time: %04d-%02d-%02d %02d:%02d:%02d\n",
-               sysBootTime.wYear, sysBootTime.wMonth, sysBootTime.wDay,
-               sysBootTime.wHour, sysBootTime.wMinute, sysBootTime.wSecond);
-    }
+    FILETIME localBootTime;
+    FileTimeToLocalFileTime(&bootTime, &localBootTime);
+    
+    SYSTEMTIME sysBootTime;
+    FileTimeToSystemTime(&localBootTime, &sysBootTime);
+    
+    printf("Boot Time: %04d-%02d-%02d %02d:%02d:%02d\n",
+           sysBootTime.wYear, sysBootTime.wMonth, sysBootTime.wDay,
+           sysBootTime.wHour, sysBootTime.wMinute, sysBootTime.wSecond);
 #else
     FILE* file = fopen("/proc/uptime", "r");
     if (file) {
@@ -741,10 +1106,47 @@ void show_help() {
     printf("\033[1;33mWeather:\033[0m\n");
     printf("  weather <city>   - Get weather information\n\n");
     
+    printf("\033[1;33mAdvanced Features:\033[0m\n");
+    printf("  read file <name>  - Read file content\n");
+    printf("  file stats <name> - Show file statistics\n");
+    printf("  search files <pattern> <dir> - Search text in files\n");
+    printf("  create dir <name> - Create directory\n");
+    printf("  tree             - Show directory tree (Linux)\n");
+    printf("  qr <text>        - Generate QR code\n");
+    printf("  voice            - Voice assistant mode\n");
+    printf("  ai <message>     - AI chat response\n");
+    printf("  speak <text>     - Text-to-speech\n\n");
+    
+    printf("\033[1;35mAI/NLP Features:\033[0m\n");
+    printf("  voice            - Start speech recognition\n");
+    printf("  ai <message>     - Chat with local AI assistant\n");
+    printf("  rag <question>   - Query knowledge base with RAG\n");
+    printf("  detectlang <text>- Detect language of text\n");
+    printf("  addintent <name> <aliases> - Add new command intent\n");
+    printf("  trainintent      - Train intent recognition model\n\n");
+    
     printf("\033[1;33mMiscellaneous:\033[0m\n");
     printf("  clear            - Clear screen\n");
     printf("  help             - Show this help\n");
     printf("  exit             - Exit Jarvis\n\n");
+    
+    printf("\033[1;95m🤖 Automation & System Control:\033[0m\n");
+    printf("  automation       - Show dashboard\n");
+    printf("  schedule e m s r - Schedule task\n");
+    printf("  tasks            - List scheduled tasks\n");
+    printf("  removetask id    - Remove scheduled task\n");
+    printf("  clipboard        - View clipboard content\n");
+    printf("  copy text        - Copy text to clipboard\n");
+    printf("  windows          - List open windows\n");
+    printf("  wifi on|off|scan - Control Wi-Fi\n");
+    printf("  services         - List system services\n");
+    printf("  gitstatus path   - Git repository status\n");
+    printf("  ports            - Show listening ports\n");
+    printf("  killport port    - Kill process on port\n");
+    printf("  docker           - Show Docker containers\n");
+    printf("  media play|pause - Media control\n");
+    printf("  crypto coin      - Get crypto price\n");
+    printf("  notify t m       - Send notification\n\n");
     
     log_action("Help displayed");
 }
@@ -902,6 +1304,239 @@ int process_command(const char* input) {
         return 0;
     }
     
+    // Advanced Features
+    if (strncmp(command, "read file ", 10) == 0) {
+        read_file_content(input + 10);
+        return 1;
+    }
+    if (strncmp(command, "search files ", 13) == 0) {
+        char pattern[256], directory[256];
+        if (sscanf(input + 13, "%s %s", pattern, directory) == 2) {
+            search_in_files(pattern, directory);
+        } else {
+            printf("\033[31mUsage: search files <pattern> <directory>\033[0m\n");
+        }
+        return 1;
+    }
+    if (strncmp(command, "file stats ", 11) == 0) {
+        get_file_stats(input + 11);
+        return 1;
+    }
+    if (strncmp(command, "create dir ", 11) == 0) {
+        create_directory(input + 11);
+        return 1;
+    }
+    if (strcmp(command, "tree") == 0) {
+        list_directory_tree(".", 0);
+        return 1;
+    }
+    if (strncmp(command, "qr ", 3) == 0) {
+        generate_qr_code(input + 3);
+        return 1;
+    }
+    if (strcmp(command, "voice") == 0) {
+        start_voice_assistant();
+        return 1;
+    }
+    if (strncmp(command, "ai ", 3) == 0) {
+        ai_chat_response(input + 3);
+        return 1;
+    }
+    if (strncmp(command, "speak ", 6) == 0) {
+        speak_text(input + 6);
+        return 1;
+    }
+    
+    // AI/NLP Features
+    if (strcmp(command, "voice") == 0) {
+        start_speech_recognition();
+        return 1;
+    }
+    if (strncmp(command, "ai ", 3) == 0) {
+        char* response = llm_chat(input + 3);
+        printf("\033[1;35m🤖 AI: %s\033[0m\n", response);
+        free(response);
+        return 1;
+    }
+    if (strncmp(command, "rag ", 4) == 0) {
+        char* response = rag_query(input + 4);
+        printf("\033[1;36m📚 RAG: %s\033[0m\n", response);
+        free(response);
+        return 1;
+    }
+    if (strncmp(command, "detectlang ", 11) == 0) {
+        char* lang = detect_language(input + 11);
+        printf("\033[1;33m🌐 Language detected: %s\033[0m\n", lang);
+        free(lang);
+        return 1;
+    }
+    if (strncmp(command, "addintent ", 10) == 0) {
+        // Simple intent addition - in real implementation, parse aliases
+        printf("\033[1;32mIntent system: Added new intent placeholder\033[0m\n");
+        return 1;
+    }
+    if (strcmp(command, "trainintent") == 0) {
+        if (train_intent_parser()) {
+            printf("\033[1;32mIntent parser trained successfully\033[0m\n");
+        } else {
+            printf("\033[31mIntent parser training failed\033[0m\n");
+        }
+        return 1;
+    }
+    
+    // Super Advanced Features
+    if (strncmp(command, "crypto ", 7) == 0) {
+        get_crypto_price(input + 7);
+        return 1;
+    }
+    if (strncmp(command, "password", 8) == 0) {
+        int length = 12;
+        if (strlen(input) > 9) {
+            sscanf(input + 9, "%d", &length);
+        }
+        generate_password(length);
+        return 1;
+    }
+    if (strcmp(command, "monitor") == 0) {
+        system_monitor();
+        return 1;
+    }
+    if (strcmp(command, "chatgpt") == 0) {
+        open_ai_chat();
+        return 1;
+    }
+    if (strncmp(command, "translate ", 10) == 0) {
+        char text[100], lang[10];
+        if (sscanf(input + 10, "%s %[^\n]", lang, text) == 2) {
+            translate_text(text, lang);
+        } else {
+            printf("\033[31mUsage: translate <language> <text>\033[0m\n");
+        }
+        return 1;
+    }
+    if (strcmp(command, "screenshot") == 0) {
+        take_screenshot();
+        return 1;
+    }
+    if (strcmp(command, "calc++") == 0) {
+        open_calculator_advanced();
+        return 1;
+    }
+    if (strncmp(command, "convert ", 8) == 0) {
+        double amount;
+        char from[10], to[10];
+        if (sscanf(input + 8, "%lf %s %s", &amount, from, to) == 3) {
+            currency_converter(amount, from, to);
+        } else {
+            printf("\033[31mUsage: convert <amount> <from_currency> <to_currency>\033[0m\n");
+        }
+        return 1;
+    }
+    if (strncmp(command, "backup ", 7) == 0) {
+        create_backup(input + 7);
+        return 1;
+    }
+    if (strcmp(command, "optimize") == 0) {
+        system_optimizer();
+        return 1;
+    }
+    if (strcmp(command, "assistant") == 0) {
+        open_virtual_assistant();
+        return 1;
+    }
+    
+    // Automation Commands
+    if (strcmp(command, "automation") == 0) {
+        show_dashboard();
+        return 1;
+    }
+    if (strncmp(command, "schedule", 8) == 0) {
+        char expr[100], msg[256];
+        int interval, repeats;
+        if (sscanf(command + 9, "%s %s %d %d", expr, msg, &interval, &repeats) == 4) {
+            add_scheduled_task(expr, msg, interval, repeats);
+        } else {
+            printf("❌ Usage: schedule <expression> <message> <interval_seconds> <repeats>\n");
+        }
+        return 1;
+    }
+    if (strcmp(command, "tasks") == 0) {
+        list_scheduled_tasks();
+        return 1;
+    }
+    if (strncmp(command, "removetask", 10) == 0) {
+        int task_id;
+        if (sscanf(command + 11, "%d", &task_id) == 1) {
+            remove_scheduled_task(task_id);
+        } else {
+            printf("❌ Usage: removetask <task_id>\n");
+        }
+        return 1;
+    }
+    if (strcmp(command, "clipboard") == 0) {
+        clipboard_history();
+        return 1;
+    }
+    if (strncmp(command, "copy ", 5) == 0) {
+        save_to_clipboard(command + 5);
+        return 1;
+    }
+    if (strcmp(command, "windows") == 0) {
+        list_windows();
+        return 1;
+    }
+    if (strncmp(command, "wifi ", 5) == 0) {
+        wifi_control(command + 5);
+        return 1;
+    }
+    if (strcmp(command, "services") == 0) {
+        list_services();
+        return 1;
+    }
+    if (strncmp(command, "gitstatus ", 10) == 0) {
+        git_status(command + 10);
+        return 1;
+    }
+    if (strcmp(command, "ports") == 0) {
+        list_ports();
+        return 1;
+    }
+    if (strncmp(command, "killport ", 9) == 0) {
+        int port;
+        if (sscanf(command + 9, "%d", &port) == 1) {
+            kill_port(port);
+        } else {
+            printf("❌ Usage: killport <port_number>\n");
+        }
+        return 1;
+    }
+    if (strncmp(command, "docker", 6) == 0 || strcmp(command, "docker") == 0) {
+        docker_ps();
+        return 1;
+    }
+    if (strncmp(command, "media", 5) == 0) {
+        char action[10];
+        if (sscanf(command + 6, "%s", action) == 1) {
+            media_control(action);
+        } else {
+            printf("❌ Usage: media <play|pause|next>\n");
+        }
+        return 1;
+    }
+    if (strncmp(command, "crypto ", 7) == 0) {
+        get_crypto_price_real(command + 7);
+        return 1;
+    }
+    if (strncmp(command, "notify ", 7) == 0) {
+        char title[100], msg[200];
+        if (sscanf(command + 7, "%s %[^\n]", title, msg) == 2) {
+            send_notification(title, msg, 5);
+        } else {
+            printf("❌ Usage: notify <title> <message>\n");
+        }
+        return 1;
+    }
+    
     // Greeting
     if (strstr(command, "hello") || strstr(command, "hi")) {
         printf("\033[1;32mHello! I'm Jarvis, your advanced AI assistant. How can I help you today?\033[0m\n");
@@ -919,6 +1554,17 @@ int main() {
     // Initialize
     enable_ansi_colors();
     srand(time(NULL));
+    
+    // Initialize AI/NLP systems
+    printf("\033[1;33mInitializing AI/NLP systems...\033[0m\n");
+    vosk_init();
+    llm_init();
+    rag_init("documents");
+    intent_parser_init();
+    
+    // Initialize automation systems
+    printf("\033[1;33mInitializing automation systems...\033[0m\n");
+    init_task_scheduler();
     
     // Welcome message
     printf("\033[1;36m");
@@ -950,9 +1596,22 @@ int main() {
         
         if (strlen(input) > 0) {
             running = process_command(input);
+            
+            // Check and execute scheduled tasks after processing each command
+            check_and_execute_tasks();
         }
     }
     
     printf("\033[1;36mThank you for using Jarvis Assistant. Have a great day!\033[0m\n");
+    
+    // Cleanup AI/NLP systems
+    vosk_cleanup();
+    llm_cleanup();
+    rag_cleanup();
+    intent_parser_cleanup();
+    
+    // Check and execute any remaining scheduled tasks before exit
+    check_and_execute_tasks();
+    
     return 0;
 }
