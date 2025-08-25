@@ -10,6 +10,11 @@ This is an advanced AI-powered desktop assistant written in C with over 25+ soph
 - Dynamic response system with contextual awareness
 - Professional logging and activity tracking
 - Cross-platform compatibility (Windows/Linux)
+- **Offline Speech Recognition**: Vosk integration for voice commands
+- **Local LLM Chat**: llama.cpp integration for private AI conversations
+- **RAG System**: Vector search over local documents for knowledge retrieval
+- **Intent Parser**: Advanced command recognition with aliases
+- **Multi-language Detection**: Automatic language identification
 
 ### 🌐 **Internet & Search Capabilities**
 - **Google Search**: `google <query>` - Opens Google search in default browser
@@ -58,6 +63,38 @@ This is an advanced AI-powered desktop assistant written in C with over 25+ soph
 - **Colored Output**: Professional ANSI color coding
 - **ASCII Art**: Beautiful welcome screen
 
+### 🎙️ **AI/NLP Features**
+
+#### Voice Commands
+- **Voice Recognition**: `voice` - Start speech recognition mode
+  - Speak commands naturally instead of typing
+  - Supports common commands like "hello jarvis", "what time is it", "tell me a joke"
+  - Works offline using Vosk models
+
+#### Local AI Assistant
+- **AI Chat**: `ai <message>` - Chat with local AI assistant
+  - Private, offline conversations using llama.cpp
+  - Responses generated locally without internet
+  - Example: `ai what is the weather today?`
+
+#### Knowledge Base (RAG)
+- **RAG Query**: `rag <question>` - Search knowledge base
+  - Retrieval-Augmented Generation over local documents
+  - Vector search for semantic understanding
+  - Example: `rag how to use python?`
+
+#### Language Detection
+- **Language ID**: `detectlang <text>` - Detect language
+  - Identifies English, Spanish, French, German, Italian
+  - Useful for multilingual interactions
+  - Example: `detectlang bonjour comment ça va`
+
+#### Intent Recognition
+- **Intent Management**: Advanced command parsing
+  - `addintent` - Add new command intents with aliases
+  - `trainintent` - Train the intent recognition model
+  - Understands natural language variations of commands
+
 ## Technical Architecture
 
 ### Core Components
@@ -77,6 +114,23 @@ This is an advanced AI-powered desktop assistant written in C with over 25+ soph
 - GCC compiler (GNU Compiler Collection)
 - Standard C libraries
 - Internet connection (for web features)
+
+### AI Model Setup
+
+#### Vosk Speech Recognition Models
+1. Download Vosk models from: https://alphacephei.com/vosk/models
+2. Extract models to `models/vosk/` directory
+3. Supported languages: English, Spanish, French, German, etc.
+
+#### Llama.cpp Compatible Models
+1. Download GGML format models compatible with llama.cpp
+2. Place model files in `models/llama/` directory
+3. Recommended: 7B parameter models for good performance
+
+#### RAG Document Repository
+1. Place text documents in `documents/` directory
+2. Supported formats: .txt, .md, .pdf (text extraction)
+3. Documents are automatically indexed for semantic search
 
 ### Compilation Commands
 
@@ -175,13 +229,65 @@ jarvis> exit
 Goodbye! Thank you for using Jarvis Assistant.
 ```
 
+### 🚀 **Advanced AI Session Example**
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                    JARVIS ASSISTANT AI 2.0                  ║
+║                With Advanced NLP Capabilities                ║
+╚══════════════════════════════════════════════════════════════╝
+
+Hello! I am Jarvis, now with AI superpowers!
+
+jarvis> voice
+🎤 Voice Assistant Mode Activated!
+🎤 Speak> (User speaks: "hello jarvis what can you do?")
+Recognized: hello jarvis what can you do?
+🤖 AI: I understand your request. Let me help you with that. You asked about: hello jarvis what can you do?
+
+jarvis> ai how does machine learning work?
+🤖 AI: That's a great question! Here's what I know... Machine learning is a subset of artificial intelligence that enables systems to learn and improve from experience without being explicitly programmed.
+
+jarvis> rag artificial intelligence benefits
+📚 RAG: Based on my knowledge documents, I found information related to your question: "artificial intelligence benefits". The documents suggest that AI can automate tasks, improve efficiency, and enable new capabilities.
+
+jarvis> detectlang esto es muy interesante
+🌐 Language detected: es
+
+jarvis> addintent weather_check ["weather", "forecast", "temperature"]
+✅ Intent system: Added new intent placeholder
+
+jarvis> trainintent
+✅ Intent parser trained successfully
+
+jarvis> help
+=== AI/NLP Commands ===
+  voice            - Start speech recognition mode
+  ai <message>     - Chat with local AI assistant
+  rag <question>   - Query knowledge base with RAG
+  detectlang <text>- Detect language of text
+  addintent <name> <aliases> - Add new command intent
+  trainintent      - Train intent recognition model
+
+jarvis> exit
+Thank you for using Jarvis AI Assistant. Have an intelligent day!
+```
+
 ## File Structure
 ```
 Assistant-in-c-/
 ├── jarvis.c          # Main source code
+├── ai_nlp.h          # AI/NLP header with definitions
+├── ai_nlp.c          # AI/NLP implementation
+├── compile_jarvis.bat # Windows compilation script
+├── compile_jarvis.sh # Linux compilation script
 ├── README.md         # This documentation
 ├── jarvis.log        # Activity log (created at runtime)
 ├── jarvis.conf       # Configuration file (optional)
+├── models/           # AI model directories
+│   ├── vosk/         # Vosk speech recognition models
+│   └── llama/        # Llama.cpp compatible models
+├── documents/        # RAG document repository
 └── .git/             # Git repository
 ```
 
