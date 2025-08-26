@@ -100,9 +100,48 @@ Jarvis Assistant is an advanced AI-powered desktop assistant with over 50+ comma
 - `wifi <on|off|scan>` - Control Wi-Fi connectivity
 - `services` - List system services
 
-### Development Tools
+### Advanced Development Tools
+
+#### Git Assistant
 - `gitstatus <path>` - Check Git repository status
-- `docker` - Show Docker containers
+- `git smart commit <repo_path> <message>` - Smart commit with change analysis
+- `git sync <repo_path>` - Sync repository (pull + push)
+
+#### Project Management
+- `proj new <type> <name>` - Create new project templates
+  - Types: `c`, `cpp`, `python`, `web`
+- `proj run <path>` - Run project at specified path
+
+#### HTTP & API Testing
+- `http <method> <url> [json_data]` - Make HTTP requests
+  - Methods: `GET`, `POST`, `PUT`, `DELETE`
+- `pretty json <json>` - Pretty print JSON strings
+
+#### Port & Process Management
+- `ports` - Show listening ports
+- `killport <port>` - Kill process on specific port
+- `killprocess <name>` - Kill process by name
+- `portinfo <port>` - Show detailed port usage info
+
+#### Log Management
+- `tail <file> [filter]` - Tail log file with optional filter
+- `logmonitor <file>` - Monitor log file changes in real-time
+
+#### Snippets & Automation
+- `snippet add <name> <command>` - Add command snippet
+- `snippet run <name>` - Run command snippet
+- `snippets` - List all available snippets
+
+#### Code Quality Tools
+- `codereview <filename> <language>` - Start code review for file
+- `codedocs <project_path>` - Generate API documentation
+- `codemetrics <filename>` - Show code metrics analysis
+- `codeformat <filename>` - Auto-format source code
+- `unittest <test_command>` - Run unit tests
+- `perftest <iterations>` - Run performance benchmarking
+
+#### Additional Developer Tools
+- `docker` - Show Docker containers and status
 
 ### Media & Entertainment
 - `media <play|pause|next>` - Control media playback
@@ -207,4 +246,4 @@ jarvis> wifi scan
 - Real-time task scheduling system
 - Platform-specific implementations for system calls
 
-This comprehensive guide covers all 50+ commands available in Jarvis Assistant v2.0 with AI and automation capabilities.
+This comprehensive guide covers all 75+ commands available in Jarvis Assistant v2.0 with advanced AI and developer productivity capabilities.

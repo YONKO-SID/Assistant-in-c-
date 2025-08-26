@@ -1,7 +1,7 @@
 # Advanced Jarvis Assistant in C
 
 ## Overview
-This is an advanced AI-powered desktop assistant written in C with over 25+ sophisticated features. The assistant provides a comprehensive command-line interface with system control, internet capabilities, mathematical operations, entertainment features, and much more.
+This is an advanced AI-powered desktop assistant written in C with over 75+ sophisticated features. The assistant provides a comprehensive command-line interface with system control, internet capabilities, developer productivity tools, AI/NLP features, mathematical operations, entertainment features, and much more.
 
 ## Key Features
 
@@ -62,6 +62,48 @@ This is an advanced AI-powered desktop assistant written in C with over 25+ soph
 - **Help System**: `help` - Comprehensive command reference
 - **Colored Output**: Professional ANSI color coding
 - **ASCII Art**: Beautiful welcome screen
+
+### 🛠️ **Developer Productivity**
+
+#### Git Assistant
+- **Git Status**: `gitstatus <path>` - Check Git repository status
+- **Smart Commit**: `git smart commit <repo_path> <message>` - Automatic commit with change analysis
+- **Sync Repository**: `git sync <repo_path>` - Pull latest changes and push local commits
+
+#### Project Management
+- **New Project**: `proj new <type> <name>` - Create project templates
+  - C, C++, Python, and Web project templates
+- **Run Project**: `proj run <path>` - Auto-detect and run projects
+  - Automatic language detection and execution
+
+#### HTTP & API Testing
+- **HTTP Client**: `http <method> <url> [json_data]` - Make REST API calls
+  - Supports GET, POST, PUT, DELETE methods
+- **JSON Pretty Print**: `pretty json <json>` - Format JSON data
+
+#### Port & Process Management
+- **Port Scanner**: `ports` - Show all listening ports
+- **Kill Port**: `killport <port>` - Terminate processes on specific ports
+- **Process Killer**: `killprocess <name>` - Kill processes by name
+- **Port Info**: `portinfo <port>` - Detailed port usage information
+
+#### Log Management
+- **Log Tail**: `tail <file> [filter]` - Real-time log viewing with filters
+- **Log Monitor**: `logmonitor <file>` - Continuous log monitoring
+
+#### Code Snippets & Automation
+- **Snippet Manager**: Add, run, and list command snippets
+  - `snippet add <name> <command>` - Add new snippet
+  - `snippet run <name>` - Execute snippet
+  - `snippets` - List all snippets
+
+#### Code Quality Tools
+- **Code Review**: `codereview <file> <language>` - Automated code analysis
+- **API Docs**: `codedocs <path>` - Generate Doxygen documentation
+- **Code Metrics**: `codemetrics <file>` - Source code metrics analysis
+- **Code Formatting**: `codeformat <file>` - Auto-format source code
+- **Unit Testing**: `unittest <command>` - Run test suites
+- **Performance Test**: `perftest <iterations>` - Benchmark performance
 
 ### 🎙️ **AI/NLP Features**
 
@@ -136,12 +178,12 @@ This is an advanced AI-powered desktop assistant written in C with over 25+ soph
 
 **Windows:**
 ```bash
-gcc -std=c11 -O2 -o jarvis.exe jarvis.c
+gcc -std=c11 -O2 -o jarvis.exe jarvis.c automation.c ai_nlp.c
 ```
 
 **Linux/Mac:**
 ```bash
-gcc -std=c11 -O2 -o jarvis jarvis.c
+gcc -std=c11 -O2 -o jarvis jarvis.c automation.c ai_nlp.c
 ```
 
 ## Usage
@@ -229,6 +271,47 @@ jarvis> exit
 Goodbye! Thank you for using Jarvis Assistant.
 ```
 
+### 💻 **Developer Productivity Session Example**
+
+```
+jarvis> gitstatus /home/user/project
+📊 Git status for: /home/user/project
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   main.c
+
+jarvis> git smart commit /home/user/project "Bug fixes"
+📝 Smart commit for: /home/user/project
+🔍 Analyzing changes...
+🚀 Staging and committing changes...
+[main abc1234] Bug fixes
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+jarvis> proj new python myapp
+🚀 Creating new python project: myapp
+📋 Creating Python project template...
+✅ Python project created. Run with: cd myapp && python main.py
+
+jarvis> tail /var/log/syslog web
+📄 Tailing log file: /var/log/syslog with filter: web
+2024-01-15T10:30:45 web-server[1234] GET /api/users 200
+2024-01-15T10:31:22 web-server[1234] POST /api/login 201
+
+jarvis> snippet add build make clean && make
+✅ Snippet 'build' added: make clean && make
+
+jarvis> snippet run build
+🚀 Running snippet: build
+💻 Executing: make clean && make
+rm -f *.o
+gcc main.c -o myapp
+
+```
+
 ### 🚀 **Advanced AI Session Example**
 
 ```
@@ -276,12 +359,15 @@ Thank you for using Jarvis AI Assistant. Have an intelligent day!
 ## File Structure
 ```
 Assistant-in-c-/
-├── jarvis.c          # Main source code
+├── jarvis.c          # Main source code with 75+ commands
+├── automation.c       # Developer productivity tools implementation
+├── automation.h       # Developer tools header
 ├── ai_nlp.h          # AI/NLP header with definitions
 ├── ai_nlp.c          # AI/NLP implementation
 ├── compile_jarvis.bat # Windows compilation script
 ├── compile_jarvis.sh # Linux compilation script
-├── README.md         # This documentation
+├── README.md         # Advanced documentation
+├── COMMANDS_GUIDE.md # Complete command reference (75+ commands)
 ├── jarvis.log        # Activity log (created at runtime)
 ├── jarvis.conf       # Configuration file (optional)
 ├── models/           # AI model directories
@@ -306,7 +392,8 @@ Assistant-in-c-/
 | File Management | 3 commands | 3 |
 | Weather | 1 command | 1 |
 | Utilities | 3 commands | 3 |
-| **Total** | **29 features** | **29** |
+| Developer Productivity | 28 commands | 28 |
+| **Total** | **57+ features** | **57+** |
 
 ## Advanced Features
 
@@ -331,7 +418,3 @@ This is an advanced AI assistant demonstration. Feel free to extend the function
 ## License
 This project demonstrates advanced C programming concepts and AI assistant capabilities.
 
----
-
-**Created by Advanced AI** 🤖  
-*Your intelligent desktop companion*

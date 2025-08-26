@@ -1,23 +1,4 @@
-/*
-  Advanced Jarvis Assistant in C
-  An AI-powered desktop assistant with 25+ features including:
-    - System commands and application control
-    - Internet search and web browsing
-    - Mathematical calculations
-    - Date/time functions
-    - Weather information
-    - Fun features (jokes, quotes, facts)
-    - System information and monitoring
-    - File management operations
-    - Dynamic command system with aliases
-    - Cross-platform compatibility
-    - Colored output and user-friendly interface
-    - Logging and history management
 
-  Compile:
-    Linux:   gcc -std=c11 -O2 -o jarvis jarvis.c
-    Windows: gcc -std=c11 -O2 -o jarvis.exe jarvis.c
-*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,6 +15,8 @@
   #include <windows.h>
   #include <iphlpapi.h>
   #include <tlhelp32.h>
+  #include <direct.h>
+  #define getcwd _getcwd
 #else
 #include <unistd.h>
 #include <sys/sysinfo.h>
@@ -49,7 +32,7 @@
 #define CONFIG_FILE "jarvis.conf"
 #define VOICE_BUFFER_SIZE 1024
 
-/* ---------- Utility Functions ---------- */
+
 
 void enable_ansi_colors() {
 #ifdef _WIN32
@@ -79,7 +62,7 @@ void log_action(const char* action) {
     }
 }
 
-/* ---------- Function Declarations ---------- */
+
 void get_system_time();
 void get_system_info();
 void get_cpu_usage();
@@ -123,17 +106,26 @@ void clear_screen();
 void show_help();
 int process_command(const char* input);
 
-/* ---------- Advanced Utility Functions ---------- */
+// Developer productivity function declarations
+void start_code_review_mode(const char* file_path, const char* language);
+void show_code_metrics(const char* file_path);
+void refactor_code(const char* pattern, const char* replacement, const char* file_path);
+void generate_api_docs(const char* project_path);
+void run_unit_tests(const char* test_command);
+void performance_benchmark(const char* command, int iterations);
+void code_format(const char* file_path, const char* style);
+
+
 
 void speak_text(const char* text) {
     char command[1024];
 #ifdef _WIN32
-    // Windows text-to-speech using PowerShell
+    
     snprintf(command, sizeof(command),
         "powershell -Command \"Add-Type -AssemblyName System.Speech; $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer; $speak.Speak('%s');\"",
         text);
 #else
-    // Linux text-to-speech using espeak (if available)
+    
     snprintf(command, sizeof(command), "espeak \"%s\" 2>/dev/null", text);
 #endif
     system(command);
@@ -261,7 +253,7 @@ void start_voice_assistant() {
 void ai_chat_response(const char* message) {
     printf("\033[1;35m🤖 AI Response:\033[0m ");
     
-    // Simple AI responses based on keywords
+    
     if (strstr(message, "hello") || strstr(message, "hi")) {
         printf("Hello! How can I assist you today?\n");
     } else if (strstr(message, "how are you")) {
@@ -287,7 +279,7 @@ char* trim_whitespace(char* str) {
     return str;
 }
 
-/* ---------- Super Advanced Features ---------- */
+
 
 void get_crypto_price(const char* coin) {
     char command[1024];
@@ -383,7 +375,7 @@ void open_calculator_advanced() {
     fgets(expression, sizeof(expression), stdin);
     expression[strcspn(expression, "\n")] = 0;
     
-    // Simple evaluation (for demonstration)
+    
     printf("\033[1;33mResult: Processing advanced calculation...\033[0m\n");
 }
 
@@ -459,7 +451,7 @@ void open_virtual_assistant() {
     }
 }
 
-/* ---------- System Information Functions ---------- */
+
 
 void get_system_time() {
     time_t now = time(NULL);
@@ -507,7 +499,7 @@ void get_system_info() {
 #endif
 }
 
-// Add CPU usage function
+
 void get_cpu_usage() {
     printf("\033[1;33m=== CPU Usage Information ===\033[0m\n");
     
@@ -516,7 +508,7 @@ void get_cpu_usage() {
     FILETIME idleTimePrev, kernelTimePrev, userTimePrev;
     
     if (GetSystemTimes(&idleTimePrev, &kernelTimePrev, &userTimePrev)) {
-        Sleep(1000); // Wait 1 second
+        Sleep(1000); 
         if (GetSystemTimes(&idleTime, &kernelTime, &userTime)) {
             ULARGE_INTEGER idle, kernel, user;
             ULARGE_INTEGER idlePrev, kernelPrev, userPrev;
@@ -563,7 +555,7 @@ void get_cpu_usage() {
 #endif
 }
 
-// Add battery information function
+
 void get_battery_info() {
     printf("\033[1;33m=== Battery Information ===\033[0m\n");
     
@@ -614,7 +606,7 @@ void get_battery_info() {
 #endif
 }
 
-// Add process information function
+
 void get_process_info() {
     printf("\033[1;33m=== Process Information ===\033[0m\n");
     
@@ -686,14 +678,14 @@ void get_process_info() {
 #endif
 }
 
-// Add network speed monitoring function
+
 void get_network_speed() {
     printf("\033[1;33m=== Network Speed Information ===\033[0m\n");
     
 #ifdef _WIN32
     MIB_IFROW ifRow;
     memset(&ifRow, 0, sizeof(ifRow));
-    ifRow.dwIndex = 1; // First network interface
+    ifRow.dwIndex = 1; 
     
     if (GetIfEntry(&ifRow) == NO_ERROR) {
         printf("Network Interface: %s\n", ifRow.wszName);
@@ -715,7 +707,7 @@ void get_network_speed() {
         printf("------------------------------------------------\n");
         
         while (fgets(line, sizeof(line), file) && line_count < 5) {
-            if (line_count > 1) { // Skip header lines
+            if (line_count > 1) { 
                 char interface[20];
                 unsigned long rx_bytes, tx_bytes;
                 sscanf(line, "%s %lu %*d %*d %*d %*d %*d %*d %*d %lu", 
@@ -730,7 +722,7 @@ void get_network_speed() {
 #endif
 }
 
-// Add system uptime function
+
 void get_system_uptime() {
     printf("\033[1;33m=== System Uptime Information ===\033[0m\n");
     
@@ -748,13 +740,13 @@ void get_system_uptime() {
     printf("System Uptime: %lu days, %lu hours, %lu minutes, %lu seconds\n", 
            days, hours, minutes, seconds);
     
-    // Get boot time
+    
     FILETIME bootTime;
     ULARGE_INTEGER bootTimeLarge;
     GetSystemTimeAsFileTime(&bootTime);
     bootTimeLarge.LowPart = bootTime.dwLowDateTime;
     bootTimeLarge.HighPart = bootTime.dwHighDateTime;
-    bootTimeLarge.QuadPart -= (uptime.QuadPart * 10000); // Convert to file time units
+    bootTimeLarge.QuadPart -= (uptime.QuadPart * 10000); 
         
     FILETIME localBootTime;
     FileTimeToLocalFileTime(&bootTime, &localBootTime);
@@ -780,7 +772,7 @@ void get_system_uptime() {
         printf("System Uptime: %d days, %d hours, %d minutes, %d seconds\n", 
                days, hours, minutes, seconds);
         
-        // Get boot time from /proc/stat
+        
         file = fopen("/proc/stat", "r");
         if (file) {
             char line[256];
@@ -820,7 +812,7 @@ void get_disk_info() {
 #endif
 }
 
-/* ---------- Mathematical Functions ---------- */
+
 
 double calculate_math(const char* operation, double a, double b) {
     if (strcmp(operation, "add") == 0) return a + b;
@@ -850,7 +842,7 @@ void handle_math_command(const char* input) {
     }
 }
 
-/* ---------- Fun Features ---------- */
+
 
 void tell_joke() {
     const char* jokes[] = {
@@ -909,7 +901,7 @@ void tell_fact() {
     log_action("Fact shared");
 }
 
-/* ---------- Internet and Search Functions ---------- */
+
 
 void open_google_search(const char* query) {
     char command[1024];
@@ -953,7 +945,7 @@ void open_website(const char* url) {
     log_action("Website opened");
 }
 
-/* ---------- File Management Functions ---------- */
+
 
 void list_files() {
     printf("\033[1;35m=== Files in Current Directory ===\033[0m\n");
@@ -985,7 +977,7 @@ void delete_file(const char* filename) {
     }
 }
 
-/* ---------- System Control Functions ---------- */
+
 
 void open_application(const char* app_name) {
     char command[512];
@@ -1031,7 +1023,7 @@ void system_logoff() {
 #endif
 }
 
-/* ---------- Weather Information ---------- */
+
 
 void get_weather_info(const char* city) {
     char command[1024];
@@ -1047,7 +1039,7 @@ void get_weather_info(const char* city) {
     log_action("Weather information requested");
 }
 
-/* ---------- Command Processing ---------- */
+
 
 void clear_screen() {
 #ifdef _WIN32
@@ -1143,10 +1135,30 @@ void show_help() {
     printf("  gitstatus path   - Git repository status\n");
     printf("  ports            - Show listening ports\n");
     printf("  killport port    - Kill process on port\n");
+    printf("  killprocess name - Kill process by name\n");
+    printf("  portinfo port    - Show port usage info\n");
     printf("  docker           - Show Docker containers\n");
     printf("  media play|pause - Media control\n");
     printf("  crypto coin      - Get crypto price\n");
-    printf("  notify t m       - Send notification\n\n");
+    printf("  notify t m       - Send notification\n");
+    printf("  proj new t n     - Create new project (c, cpp, python, web)\n");
+    printf("  proj run path    - Run project at path\n");
+    printf("  http m u [d]     - HTTP request (GET/POST/PUT/DELETE)\n");
+    printf("  pretty json j    - Pretty print JSON string\n");
+    printf("  tail file [f]    - Tail log file with optional filter\n");
+    printf("  logmonitor file  - Monitor log file changes\n");
+    printf("  snippet add n c  - Add command snippet\n");
+    printf("  snippet run n    - Run command snippet\n");
+    printf("  snippets         - List all snippets\n\n");
+
+    printf("\033[1;94m🚀 Developer Productivity:\033[0m\n");
+    printf("  codereview f l   - Start code review for file (language)\n");
+    printf("  codedocs p       - Generate API docs for project\n");
+    printf("  codemetrics f    - Show code metrics for file\n");
+    printf("  refactor p r f   - Refactor code pattern in file\n");
+    printf("  unittest c       - Run unit tests with command\n");
+    printf("  benchmark i c    - Performance benchmark (iterations)\n");
+    printf("  format f [s]     - Format code file with style\n\n");
     
     log_action("Help displayed");
 }
@@ -1157,7 +1169,7 @@ int process_command(const char* input) {
     str_to_lower(command);
     trim_whitespace(command);
     
-    // System Controls
+    
     if (strstr(command, "open notepad")) {
         open_application("notepad");
         return 1;
@@ -1187,7 +1199,7 @@ int process_command(const char* input) {
         return 1;
     }
     
-    // Internet & Search
+    
     if (strncmp(command, "google ", 7) == 0) {
         open_google_search(input + 7);
         return 1;
@@ -1201,7 +1213,7 @@ int process_command(const char* input) {
         return 1;
     }
     
-    // Date & Time
+    
     if (strcmp(command, "time") == 0) {
         get_system_time();
         return 1;
@@ -1211,13 +1223,13 @@ int process_command(const char* input) {
         return 1;
     }
     
-    // Math Tools
+    
     if (strncmp(command, "calc ", 5) == 0) {
         handle_math_command(input);
         return 1;
     }
     
-    // Fun & Entertainment
+    
     if (strcmp(command, "joke") == 0) {
         tell_joke();
         return 1;
@@ -1231,7 +1243,7 @@ int process_command(const char* input) {
         return 1;
     }
     
-    // System Information
+    
     if (strcmp(command, "systeminfo") == 0) {
         get_system_info();
         return 1;
@@ -1269,7 +1281,7 @@ int process_command(const char* input) {
         return 1;
     }
     
-    // File Management
+    
     if (strcmp(command, "list files") == 0) {
         list_files();
         return 1;
@@ -1283,13 +1295,13 @@ int process_command(const char* input) {
         return 1;
     }
     
-    // Weather
+    
     if (strncmp(command, "weather ", 8) == 0) {
         get_weather_info(input + 8);
         return 1;
     }
     
-    // Miscellaneous
+    
     if (strcmp(command, "clear") == 0) {
         clear_screen();
         return 1;
@@ -1304,7 +1316,7 @@ int process_command(const char* input) {
         return 0;
     }
     
-    // Advanced Features
+    
     if (strncmp(command, "read file ", 10) == 0) {
         read_file_content(input + 10);
         return 1;
@@ -1347,7 +1359,7 @@ int process_command(const char* input) {
         return 1;
     }
     
-    // AI/NLP Features
+    
     if (strcmp(command, "voice") == 0) {
         start_speech_recognition();
         return 1;
@@ -1371,7 +1383,7 @@ int process_command(const char* input) {
         return 1;
     }
     if (strncmp(command, "addintent ", 10) == 0) {
-        // Simple intent addition - in real implementation, parse aliases
+        
         printf("\033[1;32mIntent system: Added new intent placeholder\033[0m\n");
         return 1;
     }
@@ -1384,7 +1396,7 @@ int process_command(const char* input) {
         return 1;
     }
     
-    // Super Advanced Features
+    
     if (strncmp(command, "crypto ", 7) == 0) {
         get_crypto_price(input + 7);
         return 1;
@@ -1445,7 +1457,7 @@ int process_command(const char* input) {
         return 1;
     }
     
-    // Automation Commands
+    
     if (strcmp(command, "automation") == 0) {
         show_dashboard();
         return 1;
@@ -1537,36 +1549,204 @@ int process_command(const char* input) {
         return 1;
     }
     
-    // Greeting
+    if (strncmp(command, "proj new ", 9) == 0) {
+        char type[20], name[100];
+        if (sscanf(command + 9, "%s %s", type, name) == 2) {
+            create_project(type, name);
+        } else {
+            printf("❌ Usage: proj new <type> <name>\n");
+            printf("   Types: c, cpp, python, web\n");
+        }
+        return 1;
+    }
+
+    if (strncmp(command, "proj run ", 9) == 0) {
+        run_project(command + 9);
+        return 1;
+    }
+
+    if (strncmp(command, "git smart commit ", 16) == 0) {
+        char repo_path[256], message[512];
+        if (sscanf(command + 16, "%s %[^\n]", repo_path, message) == 2) {
+            git_smart_commit(repo_path, message);
+        } else {
+            printf("❌ Usage: git smart commit <repo_path> <message>\n");
+        }
+        return 1;
+    }
+
+    if (strncmp(command, "git sync ", 9) == 0) {
+        git_sync(command + 9);
+        return 1;
+    }
+
+    if (strncmp(command, "http ", 5) == 0) {
+        char method_lower[10], method_upper[10], url[512], data[1024] = {0};
+        if (sscanf(command + 5, "%s %s %[^\n]", method_lower, url, data) >= 2) {
+            // Convert method to uppercase for HTTP function
+            strcpy(method_upper, method_lower);
+            for (int i = 0; method_upper[i]; i++) {
+                method_upper[i] = toupper(method_upper[i]);
+            }
+            
+            if (strlen(data) > 0) {
+                http_request(method_upper, url, data);
+            } else {
+                http_request(method_upper, url, NULL);
+            }
+        } else {
+            printf("❌ Usage: http <method> <url> [json_data]\n");
+            printf("   Methods: GET, POST, PUT, DELETE\n");
+        }
+        
+        if (strncmp(command, "killprocess ", 12) == 0) {
+            kill_process_by_name(command + 12);
+            return 1;
+        }
+        
+        if (strncmp(command, "portinfo ", 9) == 0) {
+            int port;
+            if (sscanf(command + 9, "%d", &port) == 1) {
+                list_processes_by_port(port);
+            } else {
+                printf("❌ Usage: portinfo <port_number>\n");
+            }
+            return 1;
+        }
+        return 1;
+    }
+
+    if (strncmp(command, "pretty json ", 12) == 0) {
+        pretty_print_json(command + 12);
+        return 1;
+    }
+    
+    if (strncmp(command, "tail ", 5) == 0) {
+        char filepath[256], filter[256] = {0};
+        if (sscanf(command + 5, "%s %[^\n]", filepath, filter) >= 1) {
+            if (strlen(filter) > 0) {
+                tail_log(filepath, filter);
+            } else {
+                tail_log(filepath, NULL);
+            }
+        } else {
+            printf("❌ Usage: tail <filepath> [filter]\n");
+        }
+        return 1;
+    }
+    
+    if (strncmp(command, "logmonitor ", 11) == 0) {
+        start_log_monitor(command + 11);
+        return 1;
+    }
+    
+    if (strncmp(command, "snippet add ", 12) == 0) {
+        char name[50], snippet_cmd[256];
+        if (sscanf(command + 12, "%s %[^\n]", name, snippet_cmd) == 2) {
+            add_snippet(name, snippet_cmd);
+        } else {
+            printf("❌ Usage: snippet add <name> <command>\n");
+        }
+        return 1;
+    }
+    
+    if (strncmp(command, "snippet run ", 12) == 0) {
+        run_snippet(command + 12);
+        return 1;
+    }
+    
+    if (strcmp(command, "snippets") == 0) {
+        list_snippets();
+        return 1;
+    }
+
+    // Advanced Developer Productivity Commands
+    if (strncmp(command, "codereview ", 11) == 0) {
+        char file_path[256], language[20];
+        if (sscanf(command + 11, "%s %s", file_path, language) == 2) {
+            start_code_review_mode(file_path, language);
+        } else {
+            printf("❌ Usage: codereview <file_path> <language>\n");
+        }
+        return 1;
+    }
+
+    if (strncmp(command, "codedocs ", 9) == 0) {
+        generate_api_docs(command + 9);
+        return 1;
+    }
+
+    if (strncmp(command, "codemetrics ", 12) == 0) {
+        show_code_metrics(command + 12);
+        return 1;
+    }
+
+    if (strncmp(command, "refactor ", 9) == 0) {
+        char pattern[100], replacement[100], file_path[256];
+        if (sscanf(command + 9, "%s %s %s", pattern, replacement, file_path) == 3) {
+            refactor_code(pattern, replacement, file_path);
+        } else {
+            printf("❌ Usage: refactor <pattern> <replacement> <file_path>\n");
+        }
+        return 1;
+    }
+
+    if (strncmp(command, "unittest ", 9) == 0) {
+        run_unit_tests(command + 9);
+        return 1;
+    }
+
+    if (strncmp(command, "benchmark ", 10) == 0) {
+        char bench_command[512];
+        int iterations = 3;
+        if (sscanf(command + 10, "%d %[^\n]", &iterations, bench_command) >= 1) {
+            performance_benchmark(bench_command, iterations);
+        } else {
+            printf("❌ Usage: benchmark [iterations] <command>\n");
+        }
+        return 1;
+    }
+
+    if (strncmp(command, "format ", 7) == 0) {
+        char file_path[256], style[20] = "file";
+        if (sscanf(command + 7, "%s %s", file_path, style) >= 1) {
+            code_format(file_path, style);
+        } else {
+            printf("❌ Usage: format <file_path> [style]\n");
+        }
+        return 1;
+    }
+    
+    
     if (strstr(command, "hello") || strstr(command, "hi")) {
         printf("\033[1;32mHello! I'm Jarvis, your advanced AI assistant. How can I help you today?\033[0m\n");
         return 1;
     }
     
-    // Unknown command
+    
     printf("\033[31mSorry, I don't understand that command. Type 'help' for available commands.\033[0m\n");
     return 1;
 }
 
-/* ---------- Main Function ---------- */
+
 
 int main() {
-    // Initialize
+    
     enable_ansi_colors();
     srand(time(NULL));
     
-    // Initialize AI/NLP systems
+    
     printf("\033[1;33mInitializing AI/NLP systems...\033[0m\n");
     vosk_init();
     llm_init();
     rag_init("documents");
     intent_parser_init();
     
-    // Initialize automation systems
+    
     printf("\033[1;33mInitializing automation systems...\033[0m\n");
     init_task_scheduler();
     
-    // Welcome message
+    
     printf("\033[1;36m");
     printf("╔══════════════════════════════════════════════════════════════╗\n");
     printf("║                    JARVIS ASSISTANT v2.0                    ║\n");
@@ -1591,26 +1771,26 @@ int main() {
             break;
         }
         
-        // Remove newline
+        
         input[strcspn(input, "\n")] = 0;
         
         if (strlen(input) > 0) {
             running = process_command(input);
             
-            // Check and execute scheduled tasks after processing each command
+            
             check_and_execute_tasks();
         }
     }
     
     printf("\033[1;36mThank you for using Jarvis Assistant. Have a great day!\033[0m\n");
     
-    // Cleanup AI/NLP systems
+    
     vosk_cleanup();
     llm_cleanup();
     rag_cleanup();
     intent_parser_cleanup();
     
-    // Check and execute any remaining scheduled tasks before exit
+    
     check_and_execute_tasks();
     
     return 0;
