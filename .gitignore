@@ -1,0 +1,8 @@
+# Log files
+*.log
+
+# Executable files
+*.exe
+
+# Object files
+*.o
